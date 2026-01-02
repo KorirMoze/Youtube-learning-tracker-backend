@@ -1,16 +1,26 @@
 {
   "name": "youtubelearningtracker",
   "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "index.js",
+  "description": "Backend API for YouTube Learning Tracker",
+  "main": "src/server",
+  "type": "module",
+  "author": "Korir  Moses",
   "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.11.3",
+    "express-validator": "7.3.1"
+
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
 }
