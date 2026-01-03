@@ -4,6 +4,68 @@ import { getPool } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
+/**
+ * @swagger
+ * /api/videos:
+ *   post:
+ *     summary: Log or update a watched video
+ *     tags: [Videos]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - youtubeId
+ *               - title
+ *             properties:
+ *               youtubeId:
+ *                 type: string
+ *                 example: dQw4w9WgXcQ
+ *               title:
+ *                 type: string
+ *                 example: Node.js Tutorial
+ *               channelName:
+ *                 type: string
+ *               channelId:
+ *                 type: string
+ *               thumbnailUrl:
+ *                 type: string
+ *               duration:
+ *                 type: integer
+ *                 example: 1200
+ *               watchTime:
+ *                 type: integer
+ *                 example: 600
+ *               category:
+ *                 type: string
+ *                 example: Backend
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               isCompleted:
+ *                 type: boolean
+ *     responses:
+ *       201:
+ *         description: Video logged successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 video:
+ *                   $ref: '#/components/schemas/Video'
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
 
 // All routes require authentication
 router.use(authenticateToken);
@@ -18,6 +80,7 @@ router.post('/',
   body('category').optional(),
   async (req, res, next) => {
     try {
+        const pool = getPool(); 
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -81,6 +144,54 @@ router.post('/',
     }
   }
 );
+/**
+ * @swagger
+ * /api/videos:
+ *   get:
+ *     summary: Get all videos for authenticated user
+ *     tags: [Videos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of videos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 videos:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Video'
+ *                 total:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 offset:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ */
 
 // Get all videos for user
 router.get('/',
