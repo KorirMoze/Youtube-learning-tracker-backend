@@ -1,11 +1,9 @@
 // src/server.js
 import dotenv from 'dotenv';
-
-// MUST load .env FIRST before any other imports
 dotenv.config();
 
-
-// NOW import everything else (after dotenv is loaded)
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger.js';
 import express from 'express';
 import cors from 'cors';
 import { initDatabase } from './config/database.js';
@@ -29,6 +27,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/auth', authRoutes);
