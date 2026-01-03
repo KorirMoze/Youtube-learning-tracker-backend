@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { getPool } from '../../config/database.js';
+import { getPool } from '../config/database.js';
 
 export async function registerUser({ email, password, name }) {
   const pool = getPool();
