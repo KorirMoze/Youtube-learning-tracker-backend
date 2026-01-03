@@ -1,26 +1,39 @@
+// src/config/database.js
 import pg from 'pg';
 const { Pool } = pg;
 
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+let pool = null;
+
+export function getPool() {
+    console.log('🔍 getPool() called');
+  console.log('   DB_HOST:', process.env.DB_HOST);
+  console.log('   DB_PORT:', process.env.DB_PORT);
+  console.log('   DB_NAME:', process.env.DB_NAME);
+  console.log('   DB_USER:', process.env.DB_USER);
+  console.log('   DB_PASSWORD:', process.env.DB_PASSWORD ? 'SET' : 'NOT SET');
+  if (!pool) {
+     pool = new Pool({
+  host: String(process.env.DB_HOST),
+  port: parseInt(process.env.DB_PORT),
+  database: String(process.env.DB_NAME),
+  user: String(process.env.DB_USER),
+  password: String(process.env.DB_PASSWORD),
 });
 
-// Test connection
-pool.on('connect', () => {
-  console.log('✅ Connected to PostgreSQL database');
-});
+    pool.on('connect', () => {
+      console.log('✅ Connected to PostgreSQL database');
+    });
 
-pool.on('error', (err) => {
-  console.error('❌ Unexpected database error:', err);
-  process.exit(-1);
-});
+    pool.on('error', (err) => {
+      console.error('❌ Unexpected database error:', err);
+      process.exit(-1);
+    });
+  }
+  return pool;
+}
 
-// Initialize database tables
 export async function initDatabase() {
+  const pool = getPool();
   const client = await pool.connect();
   try {
     await client.query(`
@@ -41,12 +54,12 @@ export async function initDatabase() {
         channel_name VARCHAR(255),
         channel_id VARCHAR(255),
         thumbnail_url TEXT,
-        duration INTEGER, -- in seconds
-        watch_time INTEGER DEFAULT 0, -- actual time watched in seconds
+        duration INTEGER,
+        watch_time INTEGER DEFAULT 0,
         completion_percentage INTEGER DEFAULT 0,
         is_completed BOOLEAN DEFAULT false,
         category VARCHAR(100),
-        tags TEXT[], -- array of tags
+        tags TEXT[],
         notes TEXT,
         rating INTEGER CHECK (rating >= 1 AND rating <= 5),
         watched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -67,5 +80,3 @@ export async function initDatabase() {
     client.release();
   }
 }
-
-export default pool;
