@@ -6,6 +6,9 @@ let pool = null;
 
 export function getPool() {
   if (!pool) {
+        if (!process.env.DB_HOST) {
+      throw new Error('DB environment variables not loaded');
+    }
      pool = new Pool({
   host: String(process.env.DB_HOST),
   port: parseInt(process.env.DB_PORT),
