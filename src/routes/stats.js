@@ -1,13 +1,100 @@
 import express from 'express';
-import { getPool } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 router.use(authenticateToken);
 
+/**
+ * @swagger
+ * /api/stats:
+ *   get:
+ *     summary: Get user learning statistics
+ *     description: Returns aggregated learning statistics for the authenticated user.
+ *     tags: [Statistics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 overview:
+ *                   type: object
+ *                   properties:
+ *                     totalVideos:
+ *                       type: integer
+ *                       example: 120
+ *                     totalWatchTime:
+ *                       type: integer
+ *                       example: 154320
+ *                     totalHours:
+ *                       type: string
+ *                       example: "42.9"
+ *                     completedVideos:
+ *                       type: integer
+ *                       example: 80
+ *                     averageRating:
+ *                       type: number
+ *                       nullable: true
+ *                       example: 4.3
+ *                     currentStreak:
+ *                       type: integer
+ *                       example: 7
+ *                 byCategory:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       category:
+ *                         type: string
+ *                         example: Backend
+ *                       video_count:
+ *                         type: integer
+ *                         example: 25
+ *                       total_time:
+ *                         type: integer
+ *                         example: 45200
+ *                 byChannel:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       channel_name:
+ *                         type: string
+ *                         example: Fireship
+ *                       video_count:
+ *                         type: integer
+ *                         example: 15
+ *                       total_time:
+ *                         type: integer
+ *                         example: 18000
+ *                 recentActivity:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       date:
+ *                         type: string
+ *                         format: date
+ *                         example: 2025-01-01
+ *                       videos_watched:
+ *                         type: integer
+ *                         example: 3
+ *                       time_watched:
+ *                         type: integer
+ *                         example: 5400
+ *       401:
+ *         description: Unauthorized – missing or invalid JWT token
+ *       500:
+ *         description: Internal server error
+ */
 // Get user statistics
 router.get('/', async (req, res, next) => {
   try {
+const pool = req.pool;
     const userId = req.user.userId;
 
     // Total stats

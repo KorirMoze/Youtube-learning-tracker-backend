@@ -63,6 +63,7 @@ router.post('/register',
   body('name').optional().trim(),
   async (req, res, next) => {
     try {
+const pool = req.pool;
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -158,7 +159,8 @@ router.post('/login',
   body('password').notEmpty(),
   async (req, res, next) => {
     try {
-      const errors = validationResult(req);
+const pool = req.pool;   
+   const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }

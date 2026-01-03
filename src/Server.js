@@ -11,6 +11,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.js';
 import videoRoutes from './routes/videos.js';
 import statsRoutes from './routes/stats.js';
+import { attachPool } from './middleware/dbPool.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,8 +28,10 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
-
+if (process.env.NODE_ENV !== 'production') {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
+app.use(attachPool);
 
 // Routes
 app.use('/api/auth', authRoutes);
