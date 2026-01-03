@@ -1,5 +1,5 @@
 import { validationResult } from 'express-validator';
-import * as authService from './auth.service.js';
+import * as authService from '../services/auth.service.js';
 
 export async function register(req, res, next) {
   try {
