@@ -1,34 +1,87 @@
-//import { Video } from '../domain/video.js';
-import * as repo from '../repositories/video.repository.js';
+import * as videoService from '../services/videos.service.js';
 
-export async function logVideo(userId, payload) {
-  const video = new Video({
-    userId,
-    ...payload,
-  });
+export async function createVideo(req, res, next) {
+  try {
+    const userId = req.user.userId;
+    const video = await videoService.logVideo(userId, req.body);
 
-  video.updateWatchTime(payload.watchTime ?? 0);
-
-  return repo.upsert(video);
+    res.status(201).json({
+      status: 'success',
+      data: video,
+    });
+  } catch (err) {
+    next(err);
+  }
 }
 
-export async function listVideos(userId, filters) {
-  return repo.findAll(userId, {
-    limit: filters.limit ?? 50,
-    offset: filters.offset ?? 0,
-    category: filters.category,
-    search: filters.search,
-  });
+export async function listVideos(req, res, next) {
+  try {
+    const userId = req.user.userId;
+    const result = await videoService.listVideos(userId, req.query);
+
+    res.json({
+      status: 'success',
+      ...result,
+    });
+  } catch (err) {
+    next(err);
+  }
 }
 
-export async function getVideo(userId, id) {
-  return repo.findById(userId, id);
+export async function getVideo(req, res, next) {
+  try {
+    const userId = req.user.userId;
+    const video = await videoService.getVideo(userId, req.params.id);
+
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+
+    res.json({
+      status: 'success',
+      data: video,
+    });
+  } catch (err) {
+    next(err);
+  }
 }
 
-export async function updateVideo(userId, id, updates) {
-  return repo.update(userId, id, updates);
+export async function updateVideo(req, res, next) {
+  try {
+    const userId = req.user.userId;
+    const video = await videoService.updateVideo(
+      userId,
+      req.params.id,
+      req.body
+    );
+
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+
+    res.json({
+      status: 'success',
+      data: video,
+    });
+  } catch (err) {
+    next(err);
+  }
 }
 
-export async function deleteVideo(userId, id) {
-  return repo.remove(userId, id);
+export async function removeVideo(req, res, next) {
+  try {
+    const userId = req.user.userId;
+    const deleted = await videoService.deleteVideo(
+      userId,
+      req.params.id
+    );
+
+    if (!deleted) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
 }
