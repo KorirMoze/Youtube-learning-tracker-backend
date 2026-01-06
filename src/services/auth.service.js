@@ -1,68 +1,51 @@
-// src/services/auth.service.js
-import * as userRepo from '../repositories/user.repository.js';
-import { User } from '../domain/models/User.js';
-import * as password from '../utils/password.js';
-import { signToken } from '../utils/jwt.js';
+// src/services/auth.command.service.js
+import bcrypt from 'bcryptjs';
+import * as users from '../repositories/user.repository.js';
+import { generateToken } from '../utils/jwt.js';
 
-export async function registerUser(pool, { email, password: rawPassword, name }) {
-  const existing = await userRepo.findByEmail(pool, email);
-
+export async function register({ pool, email, password, name }) {
+  const existing = await users.findByEmail(pool, email);
   if (existing) {
     const err = new Error('Email already registered');
     err.statusCode = 409;
     throw err;
   }
 
-  const passwordHash = await password.hash(rawPassword);
+  const passwordHash = await bcrypt.hash(password, 10);
 
-  const row = await userRepo.create(pool, {
+  const user = await users.createUser(pool, {
     email,
-    passwordHash,
     name,
+    passwordHash,
+    provider: 'local',
+    providerId: null,
+    avatarUrl: null,
   });
-
-  const user = new User({
-    id: row.id,
-    email: row.email,
-    name: row.name,
-    passwordHash: row.password_hash,
-  });
-
-  const token = signToken({ userId: user.id, email: user.email });
 
   return {
-    user: { id: user.id, email: user.email, name: user.name },
-    token,
+    user,
+    token: generateToken(user),
   };
 }
 
-export async function loginUser(pool, { email, password: rawPassword }) {
-  const row = await userRepo.findByEmail(pool, email);
+export async function login({ pool, email, password }) {
+  const user = await users.findByEmail(pool, email);
 
-  if (!row) {
+  if (!user || user.provider !== 'local') {
     const err = new Error('Invalid credentials');
     err.statusCode = 401;
     throw err;
   }
 
-  const isValid = await password.compare(rawPassword, row.password_hash);
+  const isValid = await bcrypt.compare(password, user.password_hash);
   if (!isValid) {
     const err = new Error('Invalid credentials');
     err.statusCode = 401;
     throw err;
   }
 
-  const user = new User({
-    id: row.id,
-    email: row.email,
-    name: row.name,
-    passwordHash: row.password_hash,
-  });
-
-  const token = signToken({ userId: user.id, email: user.email });
-
   return {
-    user: { id: user.id, email: user.email, name: user.name },
-    token,
+    user,
+    token: generateToken(user),
   };
 }
